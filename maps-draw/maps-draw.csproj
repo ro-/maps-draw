@@ -57,6 +57,8 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="css\main.css" />
+    <Content Include="scripts\libs\jquery-1.9.1.min.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -66,11 +68,40 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="index.html" />
+    <Content Include="scripts\async.js" />
+    <Content Include="scripts\main.js" />
+    <Content Include="scripts\maps-draw\base.js" />
+    <Content Include="scripts\maps-draw\types\base.js" />
+    <Content Include="scripts\maps-draw\types\circle.js" />
+    <Content Include="scripts\maps-draw\types\label.js" />
+    <Content Include="scripts\maps-draw\types\marker.js" />
+    <Content Include="scripts\maps-draw\types\polygon.ext.js" />
+    <Content Include="scripts\maps-draw\types\polygon.js" />
+    <Content Include="scripts\maps-draw\types\polyline.ext.js" />
+    <Content Include="scripts\maps-draw\types\polyline.js" />
+    <Content Include="scripts\maps-draw\types\rectangle.js" />
+    <Content Include="scripts\maps-draw\types\shape.js" />
+    <Content Include="scripts\maps-draw\types\shapemanager.js" />
+    <Content Include="scripts\maps-draw\types\tooltip.js" />
+    <None Include="scripts\libs\jquery-1.9.1.intellisense.js" />
+    <Content Include="scripts\libs\jquery-1.9.1.js" />
+    <Content Include="scripts\libs\jquery-1.9.1.min.js" />
+    <Content Include="scripts\libs\jquery-ui-1.10.3.js" />
+    <Content Include="scripts\libs\jquery-ui-1.10.3.min.js" />
+    <Content Include="scripts\libs\jquery.tinypubsub.js" />
+    <Content Include="scripts\r.js" />
+    <Content Include="scripts\require.js" />
+    <Content Include="scripts\usercontrols\base.js" />
+    <Content Include="scripts\usercontrols\io.js" />
+    <Content Include="scripts\usercontrols\menu.js" />
+    <Content Include="scripts\usercontrols\render.js" />
+    <None Include="scripts\_references.js" />
     <Content Include="Web.config" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
+  <ItemGroup />
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>
     <VSToolsPath Condition="'$(VSToolsPath)' == ''">$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)</VSToolsPath>
