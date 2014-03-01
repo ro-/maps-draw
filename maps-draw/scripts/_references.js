@@ -23,3 +23,4 @@
 /// <reference path="maps-draw/types/label.js" />
 /// <reference path="maps-draw/types/circle.js" />
 /// <reference path="maps-draw/types/base.js" />
+/// <reference path="maps-draw/render.js" />

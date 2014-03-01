@@ -71,6 +71,7 @@
     <Content Include="scripts\async.js" />
     <Content Include="scripts\main.js" />
     <Content Include="scripts\maps-draw\base.js" />
+    <Content Include="scripts\maps-draw\render.js" />
     <Content Include="scripts\maps-draw\types\base.js" />
     <Content Include="scripts\maps-draw\types\circle.js" />
     <Content Include="scripts\maps-draw\types\label.js" />

@@ -1,6 +1,6 @@
 ﻿require.config({
     // relative url from where modules will load
-    baseUrl: "scripts/",
+    baseUrl: "/scripts/",
     waitSeconds: 200,
     paths: {
         "jquery": "libs/jquery-1.9.1.min",
@@ -39,11 +39,14 @@ function ($) {
 });
 
 //configure demo
-require(["maps-draw/base"],
-    function (md) {
+
+require(["maps-draw/base", "jquery", "tinypubsub"],
+    function (md, $) {
         //load maps draw
         var canvas = document.getElementById("canvas");
         md.Init(canvas);
+
+        $.publish("/editor/start");
     }
 );
 

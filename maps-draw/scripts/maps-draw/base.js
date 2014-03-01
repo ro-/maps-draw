@@ -9,8 +9,8 @@ Updated: 26/10/2011
 **/
 
 define(
-	['jquery', 'gmaps', 'usercontrols/io', "./types/base", 'tinypubsub'],
-	function ($, gmaps, io, Types) {
+	['jquery', 'gmaps', './render', 'usercontrols/io', "./types/base", 'tinypubsub'],
+	function ($, gmaps, render, io, Types) {
         var module = {};
 
         module._canvas = null;
@@ -118,6 +118,7 @@ define(
 	        });
 
 	        module._InitializeMap();
+	        render.Init(module._canvas); //init drawing controls
 	    };
 
         module._InitializeMap = function (centroid, bounds) {

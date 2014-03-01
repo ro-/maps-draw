@@ -1,7 +1,9 @@
 ﻿/* =============================================================================
    Map and Account Control Elements
    ========================================================================== */
-
+body{
+    font-family: Helvetica, Arial, 'DejaVu Sans', 'Liberation Sans', Freesans, sans-serif
+}
 
 .maps-container
 {
