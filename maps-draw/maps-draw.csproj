@@ -58,6 +58,18 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="css\main.css" />
+    <Content Include="images\icons\circle.png" />
+    <Content Include="images\icons\close.png" />
+    <Content Include="images\icons\edit.png" />
+    <Content Include="images\icons\hand.png" />
+    <Content Include="images\icons\home.png" />
+    <Content Include="images\icons\line.png" />
+    <Content Include="images\icons\marker.png" />
+    <Content Include="images\icons\menu.png" />
+    <Content Include="images\icons\polygon.png" />
+    <Content Include="images\icons\save.png" />
+    <Content Include="images\icons\search.png" />
+    <Content Include="images\icons\trash.png" />
     <Content Include="scripts\libs\jquery-1.9.1.min.map" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
