@@ -9,8 +9,8 @@ Updated: 26/10/2011
 **/
 
 define(
-	['jquery', 'gmaps', './render', 'usercontrols/io', "./types/base", 'tinypubsub'],
-	function ($, gmaps, render, io, Types) {
+	['jquery', 'gmaps', './io', './maps-ui', 'maps-draw/maps-draw', 'tinypubsub'],
+	function ($, gmaps, io, ui, mapsDraw) {
         var module = {};
 
         module._canvas = null;
@@ -45,17 +45,21 @@ define(
 
 	        $.subscribe("/usercontrols/togglecategory", function(e, category) {
 	            module._shapeManager.ToggleCategoryVisible(category);
-	        });
-	        
-	        
-	        $.subscribe("/shape/move", function () {
-	            module._shapeManager.EditCurrent();
-	        });
+	        }); 	        
 
 	        $.subscribe("/shape/cancel", function () {
-	            if (module._shapeManager.CancelEditCurrent()) {
-	                module._ZoomToFarm();
+	            var selected = module._shapeManager.GetSelected();
+
+	            if (selected) {
+	                //if current shape is completed then user must delete
+	                if (selected.IsCompleted()) { // && selected.GetOptions().reference
+	                    return;
+	                }
+
+	                module._shapeManager.FinishEditCurrent();
+	                module._ZoomToFarm();	                                
 	            }
+	            
 	        });
 
 	        $.subscribe("/shape/save", function () {
@@ -71,21 +75,24 @@ define(
 	            }
 	        });
 
-	        $.subscribe("/shape/addPaddock", function () {
-	            if (module._shapeManager.CancelEditCurrent()) {
-	                if (module._shapeManager.CanAddNewShape()) {
-	                    module.NewPaddock();
-	                    module._shapeManager.EditCurrent();
-	                }
+	        $.subscribe("/shape/addPaddock", function (e) {	            
+	            if (module._shapeManager.CanAddNewShape()) {
+	                module._shapeManager.FinishEditCurrent();
+	                module.NewPaddock();
 	            }
 	        });
 
-	        $.subscribe("/shape/addStorage", function () {
-	            if (module._shapeManager.CancelEditCurrent()) {
-	                if (module._shapeManager.CanAddNewShape()) {
-	                    module.NewStorage();
-	                    module._shapeManager.EditCurrent();
-	                }
+	        $.subscribe("/shape/addStorage", function (e) {
+	            if (module._shapeManager.CanAddNewShape()) {
+	                module._shapeManager.FinishEditCurrent();
+	                module.NewStorage();
+	            }	            
+	        });
+
+	        $.subscribe("/shape/addOther", function (e, category) {
+	            if (module._shapeManager.CanAddNewShape()) {
+	                module._shapeManager.FinishEditCurrent();
+	                module.NewOtherShape(category);
 	            }
 	        });
 
@@ -94,13 +101,20 @@ define(
 
 	            if (selected) {
 	                
+	                var deleteFunc = function () {
+	                    module._shapeManager.Remove(selected);
+	                    module._ZoomToFarm();
+	                };
+
                     //check for server reference
 	                if (selected.GetOptions().reference) {
 	                    if (confirm("Delete " + selected.name + " and all associated data and records? This cannot be undone.")) {
-	                        module._DeleteShape(selected);
+	                        module._DeleteShape(selected, deleteFunc);
 	                    }
 	                } else {
-	                    module._DeleteShape(selected);
+	                    if (confirm("Shape is not saved, are you sure you want to delete?")) {
+	                        deleteFunc();
+	                    }
 	                }
 	            }
 	        });
@@ -117,11 +131,14 @@ define(
 	            module._shapeManager.SetSelected(paddockId, "Paddock");
 	        });
 
-	        module._InitializeMap();
-	        render.Init(module._canvas); //init drawing controls
+	        module._InitMap();
+	        module._InitShapeManager();
+	        ui.Init(module._canvas); //init drawing controls
+
+	        
 	    };
 
-        module._InitializeMap = function (centroid, bounds) {
+        module._InitMap = function (centroid, bounds) {
 
             var myHomeCentroid = new gmaps.LatLng(-28, 135);
 
@@ -144,10 +161,7 @@ define(
     
             gmaps.visualRefresh = true;
     
-            module._map = new gmaps.Map(module._canvas, myOptions);
-
-            //shape manager for map
-            module._shapeManager = new Types.ShapeManager(module._map);
+            module._map = new gmaps.Map(module._canvas, myOptions);            
 
             if (bounds != null) module._FitMapToBounds(bounds);
 
@@ -159,9 +173,65 @@ define(
             gmaps.event.addListenerOnce(module._map, 'idle', function () {});
         };
 
+        module._InitShapeManager = function () {
+            //shape manager for map
+            module._shapeManager = new mapsDraw.ShapeManager(module._map);
+            module._shapeManager.SetEditable(true);
+
+            module._shapeManager.addEventListener("modechange", function (mode, shape) {
+                console.log("modechange: " + mode);
+
+                var opts = shape ? shape.GetOptions() : null;
+
+                switch (mode) {
+                    case "ready":
+                        ui.ChangeState(ui.States.Browse);
+                        break;
+                    case "select":
+                        break;
+                    case "create":
+                        if (opts.category == "Paddock") {
+                            ui.ChangeState(ui.States.PaddockCreate);
+                        } else if (opts.category == "Storage") {
+                            ui.ChangeState(ui.States.StorageCreate);
+                        } else if (opts.category == "Polygon") {
+                            ui.ChangeState(ui.States.OtherCreate);
+                        } else if (opts.category == "Polyline") {
+                            ui.ChangeState(ui.States.OtherCreate);
+                        } else if (opts.category == "Circle") {
+                            ui.ChangeState(ui.States.OtherCreate);
+                        } else if (opts.category == "Rectangle") {
+                            ui.ChangeState(ui.States.OtherCreate);
+                        } else if (opts.category == "Marker") {
+                            ui.ChangeState(ui.States.OtherCreate);
+                        }
+                        break;
+                    case "edit":
+                        if (opts.category == "Paddock") {
+                            ui.ChangeState(ui.States.PaddockEdit);
+                        } else if (opts.category == "Storage") {
+                            ui.ChangeState(ui.States.StorageEdit);
+                        } else if (opts.category == "Polygon") {
+                            ui.ChangeState(ui.States.OtherEdit);
+                        } else if (opts.category == "Polyline") {
+                            ui.ChangeState(ui.States.OtherEdit);
+                        } else if (opts.category == "Circle") {
+                            ui.ChangeState(ui.States.OtherEdit);
+                        } else if (opts.category == "Rectangle") {
+                            ui.ChangeState(ui.States.OtherEdit);
+                        } else if (opts.category == "Marker") {
+                            ui.ChangeState(ui.States.OtherEdit);
+                        }
+                        break;
+                }                
+            });            
+        };
+
         //zooms to the combined bounds of shapes in shapemanager
         module._ZoomToFarm = function () {
-            module._FitMapToBounds(module._shapeManager.GetBounds(), module._lastAdjustZoom);
+            var bounds = module._shapeManager.GetBounds();
+            if(!bounds) return;
+            module._FitMapToBounds(bounds, module._lastAdjustZoom);
         };
 	    
         //reduces bounds checking for every resize
@@ -265,19 +335,13 @@ define(
 	        }
 	    };
 
-	    module._DeleteShape = function (shape) {
+	    module._DeleteShape = function (shape, callback) {
 	        var opts = shape.GetOptions();
 	        
 	        if (opts.category == "Paddock") {
-	            io.DeletePaddock(opts.reference, function () {
-	                module._shapeManager.Remove(shape);
-	                module._ZoomToFarm();
-	            });
+	            io.DeletePaddock(opts.reference, callback);
 	        } else if (opts.category == "Storage") {
-	            io.DeleteStorage(opts.reference, function () {
-	                module._shapeManager.Remove(shape);
-	                module._ZoomToFarm();
-	            });
+	            io.DeleteStorage(opts.reference, callback);
 	        } else {
 	            alert("Delete for shape category:" + opts.category + " not implemented.");
 	        }
@@ -411,10 +475,9 @@ define(
                 reference: id
             };
 
-            var myPaddock = _shapeFactory(Types.Polygon, padddockOptions);
+            var myPaddock = _shapeFactory(mapsDraw.Polygon, padddockOptions);
             var isCreate = path == null;
             module._shapeManager.Add(myPaddock, isCreate);
-            return myPaddock;
         };
 
         module.NewStorage = function (pcoord, name, id) {
@@ -423,15 +486,52 @@ define(
                 colour: "#64f6ff",
                 selectedColour: "#ff8a00",
                 name: name,
+                radius: 100,
                 geometry: pcoord,
                 reference: id
             };
             
-            var myStorage = _shapeFactory(Types.Circle, storageOptions);
+            var myStorage = _shapeFactory(mapsDraw.Circle, storageOptions);
             var isCreate = pcoord == null;
             module._shapeManager.Add(myStorage, isCreate);
-            return myStorage;
         };
+
+        module.NewOtherShape = function (category) {
+            var options = {
+                category: category,
+                colour: "#770022",
+                selectedColour: "#ff8a00"
+            };
+
+            var type = null;
+
+            switch (category) {
+                case "Polygon":
+                    type = mapsDraw.Polygon;
+                    break;
+                case "Polyline":
+                    type = mapsDraw.Polyline;
+                    break;
+                case "Circle":
+                    type = mapsDraw.Circle;
+                    break;
+                case "Rectangle":
+                    type = mapsDraw.Rectangle;
+                    break;
+                case "Marker":
+                    type = mapsDraw.Marker;
+                    break;
+                default:
+                    alert("error bad category for new shape, cannot continue");
+                    return;
+            }
+
+            var myShape = _shapeFactory(type, options);
+            var isCreate = true;
+            module._shapeManager.Add(myShape, isCreate);
+        };
+
+        
 	    
         function _vertexCreateHandler(shape, event, onSuccess) {
             //test if zoomed in enough
@@ -440,7 +540,9 @@ define(
                 return;
             }
 
-            var coOrd = { Latitude: event.latLng.lat(), Longitude: event.latLng.lng() };
+            onSuccess();
+
+            /*var coOrd = { Latitude: event.latLng.lat(), Longitude: event.latLng.lng() };
 
             //coord valid check
             io.IsCoordValid(coOrd, module._farmId, shape.GetOptions().category, function (result) {
@@ -450,7 +552,7 @@ define(
                 } else {
                     alert(result.Errors[0]);
                 }
-            });
+            });*/
         }
 
         module.GetBounds = function () {

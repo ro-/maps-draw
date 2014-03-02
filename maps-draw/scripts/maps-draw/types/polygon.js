@@ -41,9 +41,11 @@
             });
             
             var self = this;
+
             gmaps.event.addListener(this.shape, "click", function() {
-                $.publish("/shape/click", [self]);
+                self.fireEvent("click", [self]);
             });
+
             gmaps.event.addListener(this.shape, "rightclick", function (e) {
                 if (self._editing) {
                     if (e.vertex !== undefined) {
@@ -86,11 +88,11 @@
                     this._options.map.fitBounds(this.shape.getBounds()); //zoom to shape
                     this._editing = true;
                     this.RemoveName();
+                    this.SetSelected(true);
                 } else {
                     this.shape.setEditable(false);
                     this.SetName(this.name); //updates name
                     this._editing = false;
-                    //this._saved = false;
                 }
             } else {
                 if (turnon) {
@@ -128,9 +130,7 @@
                 _cleanupDraw(self);
                 self.SetGeometry(self._polyline.getPath());
                 self.Render();
-                self.SetSelected(true);
-                self.SetEditable(true);
-                if(self.ShapeComplete) self.ShapeComplete();
+                self.fireEvent("complete", [self]);
             });
             self.editing = true;
 

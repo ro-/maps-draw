@@ -71,6 +71,7 @@
     <Content Include="images\icons\search.png" />
     <Content Include="images\icons\trash.png" />
     <Content Include="scripts\libs\jquery-1.9.1.min.map" />
+    <Content Include="scripts\libs\jquery.eventable.js" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
@@ -82,9 +83,10 @@
     <Content Include="index.html" />
     <Content Include="scripts\async.js" />
     <Content Include="scripts\main.js" />
-    <Content Include="scripts\maps-draw\base.js" />
-    <Content Include="scripts\maps-draw\render.js" />
-    <Content Include="scripts\maps-draw\types\base.js" />
+    <Content Include="scripts\maps-draw\types\eventable.js" />
+    <Content Include="scripts\usercontrols\maps-controller.js" />
+    <Content Include="scripts\usercontrols\maps-ui.js" />
+    <Content Include="scripts\maps-draw\maps-draw.js" />
     <Content Include="scripts\maps-draw\types\circle.js" />
     <Content Include="scripts\maps-draw\types\label.js" />
     <Content Include="scripts\maps-draw\types\marker.js" />
@@ -106,7 +108,6 @@
     <Content Include="scripts\require.js" />
     <Content Include="scripts\usercontrols\base.js" />
     <Content Include="scripts\usercontrols\io.js" />
-    <Content Include="scripts\usercontrols\menu.js" />
     <Content Include="scripts\usercontrols\render.js" />
     <None Include="scripts\_references.js" />
     <Content Include="Web.config" />

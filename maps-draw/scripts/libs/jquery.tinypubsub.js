@@ -15,7 +15,7 @@
   };
  
   $.publish = function () {
-      console.log("Publish event:" + arguments[0]);
+      console.log("Publish event:" + o + " args:" + arguments[0]);
         o.trigger.apply(o, arguments);
   };
  

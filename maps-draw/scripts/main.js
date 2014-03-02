@@ -5,12 +5,14 @@
     paths: {
         "jquery": "libs/jquery-1.9.1.min",
         "jquery-ui": "libs/jquery-ui-1.10.3.min",        
-        "tinypubsub": "libs/jquery.tinypubsub", 
+        "tinypubsub": "libs/jquery.tinypubsub",
+        "eventable": "libs/jquery.eventable",
     },
 
     shim: {
         "jquery-ui": ["jquery"],        
-        "tinypubsub": ["jquery"]        
+        "tinypubsub": ["jquery"],
+        "eventable": ["jquery"]
     }
 });
 
@@ -22,7 +24,7 @@ function () {
 });
 
 //load standard modules across all pages
-define("url", ["jquery", "libs/utilities/helpballoon", "libs/utilities/loader"],
+require(["jquery"],
 function ($) {    
     // create url helper
     $.url = function (url) {
@@ -40,11 +42,11 @@ function ($) {
 
 //configure demo
 
-require(["maps-draw/base", "jquery", "tinypubsub"],
-    function (md, $) {
+require(["usercontrols/maps-controller", "jquery", "tinypubsub"],
+    function (maps, $) {
         //load maps draw
         var canvas = document.getElementById("canvas");
-        md.Init(canvas);
+        maps.Init(canvas);
 
         $.publish("/editor/start");
     }

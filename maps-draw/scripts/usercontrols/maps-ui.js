@@ -13,6 +13,14 @@
         var btnSearch = $('<a id="draw-search" class="map-btn icon search keyline-left" title="Search"></a>');
         var btnHome = $('<a id="draw-home" class="map-btn icon home keyline-left" title="Home"></a>');
 
+        //other shapes row
+        var otherShapesRow = $('<div class="map-draw-controls map-editor-row"></div>');
+        var btnPolygon = $('<a class="map-btn icon polygon keyline-left" data-category="Polygon" title="">Polygon</a>');
+        var btnPolyline = $('<a class="map-btn icon polyline keyline-left" data-category="Polyline" title="">Polyline</a>');
+        var btnCircle = $('<a class="map-btn icon circle keyline-left" data-category="Circle" title="">Circle</a>');
+        var btnRectangle = $('<a class="map-btn icon rectangle keyline-left" data-category="Rectangle" title="">Rectangle</a>');
+        var btnMarker = $('<a class="map-btn icon marker keyline-left" data-category="Marker" title="">Marker</a>');
+
         var searchRow = $('<div class="map-draw-search map-editor-row"></div>');
         var inputSearch = $('<input id="search" class="single" type="text" placeholder="123 Fake St, MyCity" title="Search" />');
         var btnRunSearch = $('<a id="search" class="map-btn pin-right loud icon search" title="Search">Search</a>');
@@ -52,6 +60,15 @@
             drawControls.append(btnHome);
             drawControls.append(btnMenu);
             editSection.append(drawControls);
+
+            //other shapes
+            otherShapesRow.append(btnPolygon);
+            otherShapesRow.append(btnPolyline);
+            otherShapesRow.append(btnCircle);
+            otherShapesRow.append(btnRectangle);
+            otherShapesRow.append(btnMarker);
+            otherShapesRow.hide();
+            editSection.append(otherShapesRow);
 
             //search
             searchRow.append(inputSearch);
@@ -103,6 +120,23 @@
                 $.publish("/shape/addStorage");
             });
 
+            btnOther.click(function () {
+                //show other
+                btnOther.toggleClass("dark");
+                otherShapesRow.animate({ opacity: 'toggle', height: 'toggle' }, 200);
+            });
+
+            //othershapes
+            
+            btnPolygon
+            .add(btnPolyline)
+            .add(btnCircle)
+            .add(btnRectangle)
+            .add(btnMarker)
+            .click(function(){
+                    $.publish("/shape/addOther", [$(this).data("category")]);
+                })
+           
             btnSearch.click(function () {
                 //show search
                 btnSearch.toggleClass("dark");
@@ -166,58 +200,95 @@
             //alert("storage selected: " + storageId);
         }
 
-        function editorModeChanged(e, view, shape) {
-            var opts = shape ? shape.GetOptions() : null;
+        module.States = {
+            Browse: "browse",
+            PaddockCreate: "paddockCreate",
+            PaddockEdit: "paddockEdit",
+            StorageCreate: "storageCreate",
+            StorageEdit: "storageEdit",
+            OtherCreate: "otherCreate",
+            OtherEdit: "otherEdit",
+        };
 
-            console.log("editorModeChanged: " + view + " category:" + (opts ? opts.category : " null"));
-
-            switch (view) {
-                case "ready":
+        module.ChangeState = function(state) {
+                        
+            switch (state) {
+                case module.States.Browse:
                     btnBrowse.addClass("active");
                     btnPaddock.removeClass("active");
                     btnStorage.removeClass("active");
                     btnOther.removeClass("active");
+
                     help.animate({ opacity: 'hide', height: 'hide' }, 200);
                     saveRow.animate({ opacity: 'hide', height: 'hide' }, 200);
                     break;
-                case "select":
-                    break;
-                case "edit":
+                case module.States.PaddockCreate:
                     btnBrowse.removeClass("active");
+                    btnPaddock.addClass("active");
+                    btnStorage.removeClass("active");
+                    btnOther.removeClass("active");
 
-                    if (opts.category == "Paddock") {
-                        btnPaddock.addClass("active");
-                        helpText.text("Click the first point to complete paddock.");
-                    } else if (opts.category == "Storage") {
-                        btnStorage.addClass("active");
-                        helpText.text("Click on the map to place a storage facility.");
-                    } else {
-                        btnOther.addClass("active");
-                    }
+                    helpText.text("Click the first point to complete paddock.");
+                    help.animate({ opacity: 'show', height: 'show' }, 200);
+                    break;
 
-                    if (opts.reference) {
-                        io.GetPaddockDetails(opts.reference, function (result) {
-                            help.animate({ opacity: 'hide', height: 'hide' }, 200);
-                            editorShowForm(result, shape);
-                        });
+                case module.States.PaddockEdit:
+                    btnBrowse.removeClass("active");
+                    btnPaddock.addClass("active");
+                    btnStorage.removeClass("active");
+                    btnOther.removeClass("active");
 
-                    } else {
-                        help.animate({ opacity: 'show', height: 'show' }, 200);
-                        saveRow.animate({ opacity: 'hide', height: 'hide' }, 200);
-                    }
+                    help.animate({ opacity: 'hide', height: 'hide' }, 200);
+                    saveRow.animate({ opacity: 'show', height: 'show' }, 200);
+                    //wireUpForm(dataForm, html, btnSave, shape);
+                    break;
+
+                case module.States.StorageCreate:
+                    btnBrowse.removeClass("active");
+                    btnStorage.addClass("active");
+                    btnPaddock.removeClass("active");
+                    btnOther.removeClass("active");
+
+                    helpText.text("Click on the map to place a storage facility.");
+                    help.animate({ opacity: 'show', height: 'show' }, 200);
+                    break;
+
+                case module.States.StorageEdit:
+                    btnBrowse.removeClass("active");
+                    btnStorage.addClass("active");
+                    btnPaddock.removeClass("active");
+                    btnOther.removeClass("active");
+
+                    help.animate({ opacity: 'hide', height: 'hide' }, 200);
+                    saveRow.animate({ opacity: 'show', height: 'show' }, 200);
+                    //wireUpForm(dataForm, html, btnSave, shape);
+                    break;
+
+                case module.States.OtherCreate:
+                    btnBrowse.removeClass("active");
+                    btnStorage.removeClass("active");
+                    btnPaddock.removeClass("active");
+                    btnOther.addClass("active");
+
+                    helpText.text("Draw custom shapes to identify your farms features.");
+                    help.animate({ opacity: 'show', height: 'show' }, 200);
+                    break;
+
+                case module.States.OtherEdit:
+                    btnBrowse.removeClass("active");
+                    btnStorage.removeClass("active");
+                    btnPaddock.removeClass("active");
+                    btnOther.addClass("active");
+
+                    help.animate({ opacity: 'hide', height: 'hide' }, 200);
+                    saveRow.animate({ opacity: 'show', height: 'show' }, 200);
                     break;
             }
 
             //editSection.children().hide();
             //editSection.children(".maps-edit-" + view).show();
         }
-
-        function editorShapeCompleted(e, shape) {
-            io.GetPaddockDetails(shape.GetOptions().reference, function (result) {
-                help.animate({ opacity: 'hide', height: 'hide' }, 200);
-                editorShowForm(result, shape);
-            });
-        }
+               
 
         function _convertGoogleGeometryToInternal(_shape) {
             if (_shape.IsCompleted()) {
@@ -281,13 +352,7 @@
                 return false;
             });
 
-        }
-
-        function editorShowForm(html, shape) {
-            //show
-            saveRow.animate({ opacity: 'show', height: 'show' }, 200);
-            wireUpForm(dataForm, html, btnSave, shape);
-        }
+        }        
 
         var pfx = ["webkit", "moz", "ms", "o", ""];
         function runPrefixMethod(obj, method) {
