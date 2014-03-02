@@ -1,7 +1,7 @@
 ﻿//Shape: base class
 define(
-    ['jquery', 'gmaps', './label'],
-    function ($, gmaps, Label) {
+    ['jquery', 'gmaps', './label', './eventable'],
+    function ($, gmaps, Label, Eventable) {
         
         function Shape(options) {
             
@@ -26,13 +26,14 @@ define(
             this._editing = false;
             
             //event hooks
-            this.ShapeComplete = null;
             this._createEvent = null;
             this._beforeVertexCreateEvents = null;
         }
 
+        //add event handling
+        Shape.prototype = new Eventable; //$.eventable(Shape.prototype);
+
         //declare base functions
-        
         Shape.prototype.SetOptions = function (options) {
             if (options) $.extend(this._options, options);
             
@@ -126,7 +127,6 @@ define(
             if (selected) {
                 if (this.shape) {
                     this.shape.setOptions({ fillColor: this._options.selectedColour, strokeColor: this._options.selectedColour });
-                    //self._options.map.fitBounds(self.polygon.getBounds());
                 }
             } else {
                 if (this.shape) this.shape.setOptions({ fillColor: this._options.colour, strokeColor: this._options.colour });

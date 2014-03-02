@@ -55,7 +55,7 @@
             
             var self = this;
             gmaps.event.addListener(this.shape, "click", function () {
-                $.publish("/shape/click", [self]);
+                self.fireEvent("click", [self]);
             });
             
             Shape.prototype.Render.call(this);
@@ -76,11 +76,11 @@
                     this.shape.setEditable(true);
                     this._editing = true;
                     this.RemoveName();
+                    this.SetSelected(true);
                 } else {
                     this.shape.setEditable(false);
                     this.SetName(this.name); //updates name
                     this._editing = false;
-                    //this._saved = false;
                 }
             } else {
                 if (turnon) {
@@ -109,8 +109,7 @@
                     _cleanupDraw(self);
                     self.SetGeometry(event.latLng);
                     self.Render();
-                    self.SetSelected(true);
-                    self.SetEditable(true);
+                    self.fireEvent("complete", [self]);
                 });
             });
         }
